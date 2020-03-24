@@ -2,11 +2,13 @@
 
 source("R/ImportData.R")
 
-#library(MASS)
 subset <- survey %>%
   filter(Question == "6) interpret tables and figures")
 
-mod <- MASS::polr(EnglishText ~ 1, data = subset, Hess = TRUE)
+survey %>% 
+  group_by(Question)
+  
+mod <- MASS::polr(AnswerEnglish ~ 1, data = subset, Hess = TRUE)
 summary(mod)
 coeffs <- coef(summary(mod))
 p <- pnorm(abs(coeffs[, "t value"]), lower.tail = FALSE) * 2
