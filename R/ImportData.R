@@ -27,6 +27,12 @@ survey <- data %>%
                           s_57 %in% c("Mann", "mann", "Mannj", "Gutt", "Hannkjonn") ~ "male",
                           TRUE ~ as.character(s_57))) %>% 
   rowid_to_column(var = "StudentID") %>% 
+  # Fix s_38 with strange characters
+  mutate(s_38 = case_when(StudentID %in% c(6, 8, 15, 24, 32, 58, 66) ~ "1",
+                          StudentID %in% c(50) ~ "5",
+                          StudentID %in% c(13, 26) ~ NA_character_,
+                          TRUE ~ s_38),
+         s_38 = as.numeric(s_38)) %>% 
   pivot_longer(cols = c(s_8:s_72), names_to = c("ID"), values_to = c("Answer")) %>%
   left_join(questions, by = "ID") %>% 
   left_join(scale1, by = c("Answer" = "Numeric")) %>% 
@@ -37,28 +43,18 @@ survey <- data %>%
 
 
 
-survey %>% 
-  filter(Bulk == "meta") %>% 
-  ggplot(aes(y = Answer, x = Question)) +
-  geom_boxplot() +
-  coord_flip() +
-  labs(x = "", y = "")
+survey %>% distinct(StudentID) # 66 participants
 
-meta <- survey %>% 
-  filter(Bulk == "meta") %>% 
-  ungroup()
-
-meta %>% distinct(StudentID) # 66 participants
-
-meta %>% filter(Question == "sex") %>% count(Answer) # 34 Femal, 32 Male
-meta %>% filter(Question == "age") %>% count(Answer) # between 19 and 31 years
-meta %>% filter(Question == "Nr of parents with higher education") %>% count(Answer) # 
+survey %>% distinct(StudentID, sex) %>% count(sex) # 34 Femal, 32 Male
+survey %>% distinct(StudentID, age) %>% count(age) # between 19 and 31 years
+survey %>% distinct(StudentID, year_higher_education) %>% count(year_higher_education) # 53 in first year
+survey %>% distinct(StudentID, Nr_parents_higher_education) %>% count(Nr_parents_higher_education) # 9 with 1, 23 with 3, 34 with 3.
 
 # Education
 # 1/første: 53
 # 2 3
 # 3 3
 # 4 3
-# 5 1
-# NA 3
+# 5 2
+# NA 2
 
